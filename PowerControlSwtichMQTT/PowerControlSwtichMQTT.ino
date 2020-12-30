@@ -26,7 +26,9 @@ WiFiServer server(80);
 WiFiClient wifimqClient;
 PubSubClient mqttclient;
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+const int utcOffsetInSeconds = 19800;
+
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 //PIN Switch Mapping
 const int Switch1 = 5;
@@ -219,49 +221,49 @@ void loop() {
   //Check amd control switch state
   if (request.indexOf("/light1on") > 0)  {
     digitalWrite(5, LOW);
-    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":1, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light1off") > 0)  {
     digitalWrite(5, HIGH);
-    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":0, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
   }
 
   if (request.indexOf("/light2on") > 0)  {
     digitalWrite(4, LOW);
-    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":1, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light2off") > 0)  {
     digitalWrite(4, HIGH);
-    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":0, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light3on") > 0)  {
     digitalWrite(14, LOW);
-    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":1, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light3off") > 0)  {
     digitalWrite(14, HIGH);
-    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":0, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light4on") > 0)  {
     digitalWrite(12, LOW);
-    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":1, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
   if (request.indexOf("/light4off") > 0)  {
     digitalWrite(12, HIGH);
-    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":0, \"Time\":\""+timeClient.getFormattedTime()+"\"}";
+    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
     mqttclient.publish(mqtt_topic, controlState.c_str());
 
   }
@@ -398,4 +400,50 @@ void loop() {
   Serial.println("Client disonnected");
   Serial.println("");
 
+}
+
+String getCurrentDateTime()
+{
+  unsigned long epochTime = timeClient.getEpochTime();
+  Serial.print("Epoch Time: ");
+  Serial.println(epochTime);
+  
+  String formattedTime = timeClient.getFormattedTime();
+  Serial.print("Formatted Time: ");
+  Serial.println(formattedTime);  
+
+  int currentHour = timeClient.getHours();
+  Serial.print("Hour: ");
+  Serial.println(currentHour);  
+
+  int currentMinute = timeClient.getMinutes();
+  Serial.print("Minutes: ");
+  Serial.println(currentMinute); 
+   
+  int currentSecond = timeClient.getSeconds();
+  Serial.print("Seconds: ");
+  Serial.println(currentSecond);  
+
+
+  //Get a time structure
+  struct tm *ptm = gmtime ((time_t *)&epochTime); 
+
+  int monthDay = ptm->tm_mday;
+  Serial.print("Month day: ");
+  Serial.println(monthDay);
+
+  int currentMonth = ptm->tm_mon+1;
+  Serial.print("Month: ");
+  Serial.println(currentMonth);
+
+  int currentYear = ptm->tm_year+1900;
+  Serial.print("Year: ");
+  Serial.println(currentYear);
+
+  //Print complete date:
+  String currentDateTime = String(currentYear) + ":" + String(currentMonth) + ":" + String(monthDay)+"T"+formattedTime;
+  Serial.print("Current date: ");
+  Serial.println(currentDateTime);
+  return currentDateTime; 
+ 
 }
