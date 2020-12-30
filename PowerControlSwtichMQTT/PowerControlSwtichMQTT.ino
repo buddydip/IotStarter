@@ -3,20 +3,21 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <ESP8266mDNS.h>
+
 
 //Wi-fi connection
 const char *ssid = "MORPHEOUS";
 const char *password = "whatever2020";
 
 //MQTT Connection
-const char *mqtt_server = "192.168.1.8";
+const char *mqtt_server = "Smarty.local";
 const int mqtt_port = 1883;
 const char *mqtt_topic = "smarty/switchcontrol";
 
 //JSON message for switch control
 String controlState = "";
 StaticJsonDocument<200> doc;
-
 
 //Wifiserver instance at port 80
 WiFiServer server(80);
@@ -32,6 +33,7 @@ const int Switch1 = 5;
 const int Switch2 = 4;
 const int Switch3 = 14;
 const int Switch4 = 12;
+const char *nodeID = "POWERCONTROL1";
   
 void setup() {
   Serial.begin(9600);
@@ -45,12 +47,12 @@ void setup() {
   pinMode(4, OUTPUT);
   pinMode(14, OUTPUT);
   pinMode(12, OUTPUT);
-  pinMode(1, OUTPUT);
+ 
   digitalWrite(5, HIGH);
   digitalWrite(4, HIGH);
   digitalWrite(14, HIGH);
   digitalWrite(12, HIGH);
-  digitalWrite(1, LOW);
+
 
   // Connect to WiFi network
   Serial.print("Connecting to ");
@@ -70,33 +72,59 @@ void setup() {
   Serial.println("Server started");
 
   // Print the IP address
-  Serial.println("Use this URL to connect: ");
-  Serial.println("http://");
-  Serial.println(WiFi.localIP());
+  Serial.print("Use this URL to connect: ");
+  Serial.print("http://");
+  Serial.print(WiFi.localIP());
   Serial.println("/");
 
+
+ // Set up mDNS responder:
+  // - first argument is the domain name, in this example
+  //   the fully-qualified domain name is "<hostname>.local"
+  // - second argument is the IP address to advertise
+  //   we send our IP address on the WiFi network
+  if (!MDNS.begin(nodeID, WiFi.localIP())) {
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.println("mDNS responder started");
+
+  // Add service to MDNS-SD
+  MDNS.addService("http", "tcp", 80);
+  
+  //connect to MQTT broker
   connectMQTT();
 }
 
 int connectMQTT() 
 {
-  digitalWrite(1, HIGH);
+  Serial.print("Connecting to MQTT Broker ");
+  Serial.print("Connecting to MQTT Broker ");
+  Serial.print(mqtt_server);
+  Serial.println(" at port "+mqtt_port);
+ 
   //connect to MQTT server
   mqttclient.setClient(wifimqClient);
   mqttclient.setServer(mqtt_server, mqtt_port);
   mqttclient.setCallback(MQTTcallback);
 
-  if (mqttclient.connect("ESP8266", "pi", "meripi123"))
+  if (mqttclient.connect(nodeID))
     {
-      Serial.println("connected");
-      boolean subs = mqttclient.subscribe(mqtt_topic); 
+      Serial.println("Connected to MQTT Broker");
+      
+      boolean subs = mqttclient.subscribe(mqtt_topic);
+      
+      Serial.print("Subscribed to topic "); 
+      Serial.println(mqtt_topic); 
       String msg = String("Connected. State : "+String(mqttclient.state())+" Topic Subscribed :"+ String(subs) +"  Topic : " + String(mqtt_topic));
       mqttclient.publish("debugsmarty", msg.c_str());    
-      digitalWrite(1, LOW);
+     
     }
     else
     {
-      Serial.println("failed with state ");
+      Serial.print("Failed to connect to MQTT broker with state ");
       Serial.println(mqttclient.state());
       String msg = String("Not Connected : "+mqttclient.state());
       mqttclient.publish("debugsmarty", msg.c_str());    
@@ -107,9 +135,7 @@ int connectMQTT()
 
 void MQTTcallback(char* topic, byte* payload, unsigned int length) 
 {
-  digitalWrite(1, HIGH);
-  
-  Serial.println("Message received in topic: ");
+  Serial.print("Message received in topic: ");
   Serial.println(topic);
   Serial.println("Message:");
   String message;
@@ -125,7 +151,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
 
   // Test if parsing succeeds.
   if (error) {
-    Serial.println("deserializeJson() failed: ");
+    Serial.print("deserializeJson() failed: ");
     Serial.println(error.f_str());
     return;
   }
@@ -138,11 +164,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   int switchState = doc["SwitchState"];
  
 
-  // Print values.
-  Serial.println(switchID);
-  Serial.println(stateTime);
-  Serial.println(switchState);
-
+  //Check swicth to toggle
   if(switchID.equals("Switch1"))
   {
       digitalWrite(Switch1, !switchState);
@@ -161,10 +183,14 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   }
      
   mqttclient.publish("debugsmarty", ("Switch :"+switchID+"  State  :"+switchState+"  Time : "+stateTime).c_str());    
-  digitalWrite(1, LOW);
+  
 }
 
 void loop() {
+
+  MDNS.update();
+
+  
   // Check if a client has connected
   WiFiClient wifiClient = server.available();
   
@@ -177,9 +203,6 @@ void loop() {
   mqttclient.loop();
   timeClient.update();
   
-  // Wait until the client sends some data
-  Serial.println("new client");
- 
   while (!wifiClient.available()) {
     delay(1);
     if (!wifiClient) {
@@ -366,17 +389,12 @@ void loop() {
 
   }
 
-
   wifiClient.println("</tr>");
   wifiClient.println("</table>");
   wifiClient.println("<BR>");
-  
-  wifiClient.println(controlState);
-  
   wifiClient.println("</center>");
   wifiClient.println("</html>");
   delay(1);
-  Serial.println(controlState);
   Serial.println("Client disonnected");
   Serial.println("");
 
