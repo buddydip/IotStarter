@@ -1,184 +1,227 @@
+#include <MQ2.h>
+#include <ArduinoJson.h>
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
+#include <SoftwareSerial.h>
+SoftwareSerial s(5,6); // (Rx, Tx)
 
-/*
- Standalone Sketch to use with a Arduino Fio and a
- Sharp Optical Dust Sensor GP2Y1010AU0F
- 
- Blog: http://arduinodev.woofex.net/2012/12/01/standalone-sharp-dust-sensor/
- Code: https://github.com/Trefex/arduino-airquality/
- 
- For Pin connections, please check the Blog or the github project page
- Authors: Cyrille Médard de Chardon (serialC), Christophe Trefois (Trefex)
- Changelog:
-   2012-Dec-01:  Cleaned up code
- 
- This work is licensed under the
- Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
- To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
- or send a letter to Creative Commons, 444 Castro Street, Suite 900,
- Mountain View, California, 94041, USA.
-*/
-
-#include <dht.h>
-#include <MQ135.h>
+//JSON message for switch control
+StaticJsonDocument<200> doc;
 
 //define PINS
-#define DHT11_PIN 6
-#define DUSTSENSOR_PIN A0
-#define DUSTDIG_PIN 7
+#define DHTPIN 13
+#define MQ2_PIN A0
+#define PIR_PIN 12
+#define DHTTYPE DHT11   // DHT 11 
 
-#define RAINSENSOR_ANPIN A1
-#define RAINSENSOR_DGPIN 2
-
-#define SOILSENSOR_ANPIN A2
- 
-#define MQ135SENSOR_ANPIN A3
-#define MQ135SENSOR_DGPIN 8
-
-//Dust sensor  
-int samplingTime = 280;
-int deltaTime = 40;
-int sleepTime = 9680;
-int dustMeasured;
-float voMeasured = 0;
-double calcVoltage = 0;
-float dustDensity = 0;
-float olddustDensity = 0;
-
-//DTH
-dht DHT;
-float temperature;
-float humidity;
-float oldtemperature;
-float oldhumidity;
-
-//Rain Sensor
-float nRainVal;
-boolean bIsRaining = false;
-float noldRainVal;
-boolean boldIsRaining = false;
-
-//Soil Moisture Sensor
-float soilMoisture; 
-float oldsoilMoisture; 
+DHT dht = DHT(DHTPIN, DHTTYPE);
+float temperature = 0;
+float humidity = 0;
+float oldtemperature = 0;
+float oldhumidity = 0;
+float heatIndex = 0;
 
 //MQ135
-float ppm;
-float oldppm;
+int lpg, co, smoke;
+int oldlpg, oldco, oldsmoke;
+String outputString = "";
+MQ2 mq2(MQ2_PIN);
 
-String outputString;
 
-void setup(){
-  Serial.begin(9600);  
-  pinMode(DUSTDIG_PIN,OUTPUT);
-  pinMode(RAINSENSOR_DGPIN,INPUT);
-  pinMode(DHT11_PIN,INPUT);
+boolean motion = false;
+long lastMotionTime = 0;
+String lastMotionTimeformattted = "";
+//long motionDetectionInterval = 300000;
+long motionDetectionInterval = 60000;
+
+
+void setup() {
+
+  Serial.begin(9600);
+  Serial.flush();
   
+  pinMode(PIR_PIN, INPUT);
+  pinMode(MQ2_PIN, INPUT);
+
+  dht.begin();
+  mq2.begin();
+  s.begin(9600);
 }
- 
-void loop(){
+
+void loop() {
+
+  //DTH Reading
+  oldtemperature = temperature;
+  oldhumidity = humidity;
+
+  delay(2000);
+
+   // Read the humidity in %:
+  humidity = dht.readHumidity();
+  // Read the temperature as Celsius:
+  temperature = dht.readTemperature();
 
 
- //Dust Sensor Reading
-  olddustDensity = dustDensity;
+  // Check if any reads failed and exit early (to try again):
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
 
-  digitalWrite(DUSTDIG_PIN,LOW); // power on the LED
-  delayMicroseconds(samplingTime);
- 
-  voMeasured = analogRead(DUSTSENSOR_PIN); // read the dust value
- 
-  delayMicroseconds(deltaTime);
-  digitalWrite(DUSTDIG_PIN,HIGH); // turn the LED off
-  delayMicroseconds(sleepTime);
+  // Compute heat index in Celsius:
+  heatIndex = dht.computeHeatIndex(temperature, humidity, false);
   
-  // 0 - 3.3V mapped to 0 - 1023 integer values
-  // recover voltage
-  calcVoltage = voMeasured * (5.0/1024.0);
+  //MQ2 Gas Sensor Reading
+  float* values= mq2.read(true); //set it false if you don't want to print the values in the Serial
+  oldlpg = lpg;
+  oldco=co;
+  oldsmoke=smoke;
+
+  //lpg = values[0];
+  lpg = mq2.readLPG();
+  //co = values[1];
+  co = mq2.readCO();
+  //smoke = values[2];
+  smoke = mq2.readSmoke();
+
+  Serial.print("motion Pin : ");
+  Serial.println(digitalRead(PIR_PIN));
+
+
+    if (digitalRead(PIR_PIN) == HIGH)
+    {    
+      
+      if (digitalRead(PIR_PIN) != motion)
+      {
+        motion = true;
+        long nowTime = millis();
+        Serial.println("Motion Detected!");
+        if ((nowTime - lastMotionTime) > motionDetectionInterval)
+        {
+          outputString = "";
+          doc["ParamName"] = "Motion";
+          doc["ParamValue"] = motion;
+          serializeJson(doc, outputString);
+          Serial.println(outputString);
+          lastMotionTime = nowTime;
+          //write to serial for NodeMCU to read
+          Serial.println(s.available());
+          if(s.available()>0)
+          {
+            serializeJson(doc, s);
+          }
+          doc.clear();
+        }
+      }
+
+    }
+    else
+    {
+      motion = false;
+    }
  
-  // linear eqaution taken from http://www.howmuchsnow.com/arduino/airquality/
-  // Chris Nafis (c) 2012
-  dustDensity = 0.17 * calcVoltage - 0.1;
+  if ((abs(oldtemperature - temperature) > 1) && !isnan(temperature))
+  {
+    outputString = "";
+    doc["ParamName"] = "Temperature";
+    doc["ParamValue"] = temperature;
+    serializeJson(doc, outputString);
 
-  
-
-//DTH Reading
- oldtemperature = temperature;
- oldhumidity = humidity;
- 
- int chk = DHT.read11(DHT11_PIN); 
-  temperature = DHT.temperature;
-  humidity = DHT.humidity;
-
-//Rain Sensor Reading
-  noldRainVal = nRainVal;
-  boldIsRaining = bIsRaining;
-  
-  nRainVal = analogRead(RAINSENSOR_ANPIN);
-  nRainVal = ((1023- nRainVal)/1023)*100;
-  bIsRaining = !(digitalRead(RAINSENSOR_DGPIN));
-  
-
-//Soil Moisture Sensor Reading
-oldsoilMoisture = soilMoisture;
-soilMoisture = analogRead(SOILSENSOR_ANPIN);
-soilMoisture = ((1023- soilMoisture)/1023)*100;
-
-//MQ135 Gas Sensor Reading
-oldppm = ppm;
-MQ135 gasSensor = MQ135(MQ135SENSOR_ANPIN);
-float rzero = gasSensor.getRZero();
-ppm = gasSensor.getPPM();
-float gasDigital = digitalRead(MQ135SENSOR_DGPIN);
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    Serial.println(s.available());
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
 
 
-if(dustDensity != olddustDensity)
-{
-  outputString = "\"ParamName\": \"airDustDensity\",\"ParamValue\": \""+ String(dustDensity)+"\""; 
-  Serial.println(outputString);
+  if ((abs(oldhumidity - humidity) > 1) && !isnan(humidity))
+  {
+    outputString = "";
+    doc["ParamName"] = "Humidity";
+    doc["ParamValue"] = humidity;
+    serializeJson(doc, outputString);
+
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
+
+  if (((abs(oldtemperature - temperature) > 1) || (abs(oldhumidity - humidity) > 1)) && !isnan(heatIndex))
+  {
+    outputString = "";
+    doc["ParamName"] = "HeatIndex";
+    doc["ParamValue"] = heatIndex;
+    serializeJson(doc, outputString);
+
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
+
+  if (smoke != oldsmoke)
+  {
+    outputString = "";
+    doc["ParamName"] = "Smoke";
+    doc["ParamValue"] = smoke;
+    serializeJson(doc, outputString);
+
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    Serial.println(s.available());
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
+
+  if (lpg != oldlpg)
+  {
+    outputString = "";
+    doc["ParamName"] = "LPG";
+    doc["ParamValue"] = lpg;
+    serializeJson(doc, outputString);
+
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
+
+  if (co != oldco)
+  {
+    outputString = "";
+    doc["ParamName"] = "CO2";
+    doc["ParamValue"] = co;
+    serializeJson(doc, outputString);
+
+    Serial.println(outputString);
+    
+    //write to serial for NodeMCU to read
+    if(s.available()>0)
+    {
+      serializeJson(doc, s);
+    }
+    doc.clear();
+  }
 }
-  
-if(oldtemperature != temperature)
-{
-  outputString = "\"ParamName\": \"airTemperature\",\"ParamValue\": \""+ String(temperature)+"\""; 
-  Serial.println(outputString);
-}
-
-
-if(oldhumidity != humidity)
-{
-  outputString = "\"ParamName\": \"airHumidity\",\"ParamValue\": \""+ String(humidity)+"\""; 
-  Serial.println(outputString);
-}
-
-if(noldRainVal != nRainVal)
-{
-  outputString = "\"ParamName\": \"rainMeasure\",\"ParamValue\": \""+ String(nRainVal)+"\""; 
-  Serial.println(outputString);
-}
-
-
-if(boldIsRaining != bIsRaining)
-{
-  outputString = "\"ParamName\": \"isRaining\",\"ParamValue\": \""+ String(bIsRaining)+"\""; 
-  Serial.println(outputString);
-}
-
-
-if(oldsoilMoisture != soilMoisture)
-{
-  outputString = "\"ParamName\": \"soilMoisture\",\"ParamValue\": \""+ String(soilMoisture)+"\""; 
-  Serial.println(outputString);
-}
-
-
-if(oldppm != ppm)
-{
-  outputString = "\"ParamName\": \"gasValue\",\"ParamValue\": \""+ String(ppm)+"\""; 
-  Serial.println(outputString);
-}  
-
-//Print to serial
-//Serial.println("\"airDustDensity\": \""+ String(dustDensity) +"\", \"airTemperature\":\""+String(temperature)+"\", \"airHumidity\":\""+String(humidity)+"\", \"isRaining\":\""+String(bIsRaining)+"\", \"rainMeasure\":\""+String(nRainVal)+"\", \"soilHumidity\":\""+String(soilMoisture)+"\", \"gasValue\":\""+String(ppm)+"\""); 
- 
-delay(1000);
-}
-
