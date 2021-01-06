@@ -1,4 +1,4 @@
-#include <MQ2.h>
+  #include <MQ2.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
 #include <Adafruit_Sensor.h>
@@ -33,11 +33,12 @@ long lastMotionTime = 0;
 String lastMotionTimeformattted = "";
 //long motionDetectionInterval = 300000;
 long motionDetectionInterval = 60000;
-
+long delayTime = 60000;
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+  s.begin(115200);
   Serial.flush();
   
   pinMode(PIR_PIN, INPUT);
@@ -45,7 +46,8 @@ void setup() {
 
   dht.begin();
   mq2.begin();
-  s.begin(9600);
+  
+  delay(2000);
 }
 
 void loop() {
@@ -53,8 +55,6 @@ void loop() {
   //DTH Reading
   oldtemperature = temperature;
   oldhumidity = humidity;
-
-  delay(2000);
 
    // Read the humidity in %:
   humidity = dht.readHumidity();
@@ -65,6 +65,7 @@ void loop() {
   // Check if any reads failed and exit early (to try again):
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("Failed to read from DHT sensor!");
+    dht.begin();
     return;
   }
 
@@ -84,15 +85,30 @@ void loop() {
   //smoke = values[2];
   smoke = mq2.readSmoke();
 
-  Serial.print("motion Pin : ");
-  Serial.println(digitalRead(PIR_PIN));
+  Serial.print("ESP Serial Available: ");
+  Serial.println(s.available());
 
+  Serial.print("Temperarture : ");
+  Serial.println(temperature);
 
+  Serial.print("Humidity : ");
+  Serial.println(humidity);
+
+  Serial.print("Heat Index : ");
+  Serial.println(heatIndex);
+
+  Serial.print("LPG : ");
+  Serial.println(values[0]);
+
+  Serial.print("CO2 : ");
+  Serial.println(values[1]);
+  
+  Serial.print("Smoke : ");
+  Serial.println(values[2]);
+
+    
     if (digitalRead(PIR_PIN) == HIGH)
-    {    
-      
-      if (digitalRead(PIR_PIN) != motion)
-      {
+    {        
         motion = true;
         long nowTime = millis();
         Serial.println("Motion Detected!");
@@ -104,16 +120,13 @@ void loop() {
           serializeJson(doc, outputString);
           Serial.println(outputString);
           lastMotionTime = nowTime;
-          //write to serial for NodeMCU to read
-          Serial.println(s.available());
-          if(s.available()>0)
-          {
-            serializeJson(doc, s);
-          }
-          doc.clear();
-        }
-      }
 
+          //write to serial for NodeMCU to read
+          s.print(outputString);
+          s.println();
+          doc.clear();
+          delay(1000);          
+        }
     }
     else
     {
@@ -130,12 +143,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    Serial.println(s.available());
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
+    delay(1000);    
   }
 
 
@@ -149,11 +160,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
+    delay(1000);
   }
 
   if (((abs(oldtemperature - temperature) > 1) || (abs(oldhumidity - humidity) > 1)) && !isnan(heatIndex))
@@ -166,11 +176,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
+    delay(1000);
   }
 
   if (smoke != oldsmoke)
@@ -183,12 +192,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    Serial.println(s.available());
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
+    delay(1000);
   }
 
   if (lpg != oldlpg)
@@ -201,11 +208,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
+    delay(1000);
   }
 
   if (co != oldco)
@@ -218,10 +224,10 @@ void loop() {
     Serial.println(outputString);
     
     //write to serial for NodeMCU to read
-    if(s.available()>0)
-    {
-      serializeJson(doc, s);
-    }
+    s.print(outputString);
+    s.println();
     doc.clear();
   }
+
+  delay(delayTime);
 }
