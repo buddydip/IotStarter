@@ -35,6 +35,11 @@ const int Switch1 = 5;
 const int Switch2 = 4;
 const int Switch3 = 14;
 const int Switch4 = 12;
+const int Switch5 = 16;
+const int Switch6 = 2;
+const int Switch7 = 10;
+const int Switch8 = 13;
+
 const char *nodeID = "POWERCONTROL1";
   
 void setup() {
@@ -45,17 +50,25 @@ void setup() {
   
   timeClient.begin();
   
-  pinMode(5, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(14, OUTPUT);
-  pinMode(12, OUTPUT);
+  pinMode(Switch1, OUTPUT);
+  pinMode(Switch2, OUTPUT);
+  pinMode(Switch3, OUTPUT);
+  pinMode(Switch4, OUTPUT);
+  pinMode(Switch5, OUTPUT);
+  pinMode(Switch6, OUTPUT);
+  pinMode(Switch7, OUTPUT);
+  pinMode(Switch8, OUTPUT);
  
-  digitalWrite(5, HIGH);
-  digitalWrite(4, HIGH);
-  digitalWrite(14, HIGH);
-  digitalWrite(12, HIGH);
+  digitalWrite(Switch1, HIGH);
+  digitalWrite(Switch2, HIGH);
+  digitalWrite(Switch3, HIGH);
+  digitalWrite(Switch4, HIGH);
+  digitalWrite(Switch5, HIGH);
+  digitalWrite(Switch6, HIGH);
+  digitalWrite(Switch7, HIGH);
+  digitalWrite(Switch8, HIGH);
 
-
+  
   // Connect to WiFi network
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -183,6 +196,26 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   {
     digitalWrite(Switch4, !switchState);
   }
+
+  if(switchID.equals("Switch5"))  
+  {
+    digitalWrite(Switch5, !switchState);
+  }
+  
+    if(switchID.equals("Switch6"))  
+  {
+    digitalWrite(Switch6, !switchState);
+  }
+  
+    if(switchID.equals("Switch7"))  
+  {
+    digitalWrite(Switch7, !switchState);
+  }
+  
+    if(switchID.equals("Switch8"))  
+  {
+    digitalWrite(Switch8, !switchState);
+  }
      
   mqttclient.publish("debugsmarty", ("Switch :"+switchID+"  State  :"+switchState+"  Time : "+stateTime).c_str());    
   
@@ -220,55 +253,257 @@ void loop() {
 
   //Check amd control switch state
   if (request.indexOf("/light1on") > 0)  {
-    digitalWrite(5, LOW);
-    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
+    
+    //controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
+
+    digitalWrite(Switch1, LOW);
+    
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch1";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
 
   }
   if (request.indexOf("/light1off") > 0)  {
-    digitalWrite(5, HIGH);
-    controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
+    digitalWrite(Switch1, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch1";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
   }
 
   if (request.indexOf("/light2on") > 0)  {
-    digitalWrite(4, LOW);
-    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
+    digitalWrite(Switch2, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch2";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
-  if (request.indexOf("/light2off") > 0)  {
-    digitalWrite(4, HIGH);
-    controlState ="{\"SwitchID\":\"Switch2\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
+  if (request.indexOf("/light2off") > 0)  { 
+    
+    digitalWrite(Switch2, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch2";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
   if (request.indexOf("/light3on") > 0)  {
-    digitalWrite(14, LOW);
-    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
+    
+    digitalWrite(Switch3, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch3";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
   if (request.indexOf("/light3off") > 0)  {
-    digitalWrite(14, HIGH);
-    controlState ="{\"SwitchID\":\"Switch3\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
+    
+    digitalWrite(Switch3, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch3";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
   if (request.indexOf("/light4on") > 0)  {
-    digitalWrite(12, LOW);
-    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
+    
+    digitalWrite(Switch4, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch4";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
   if (request.indexOf("/light4off") > 0)  {
-    digitalWrite(12, HIGH);
-    controlState ="{\"SwitchID\":\"Switch4\",\"SwitchState\":0, \"Time\":\""+getCurrentDateTime()+"\"}";
+
+    digitalWrite(Switch4, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch4";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
     mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
 
   }
 
- 
+    if (request.indexOf("/light5on") > 0)  {
+    
+    digitalWrite(Switch5, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch5";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+  if (request.indexOf("/light5off") > 0)  {
+
+    digitalWrite(Switch5, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch5";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+    if (request.indexOf("/light6on") > 0)  {
+    
+    digitalWrite(Switch6, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch6";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+  if (request.indexOf("/light6off") > 0)  {
+
+    digitalWrite(Switch6, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch6";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+
+     if (request.indexOf("/light7on") > 0)  {
+    
+    digitalWrite(Switch7, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch7";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+  if (request.indexOf("/light7off") > 0)  {
+
+    digitalWrite(Switch7, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch7";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+    if (request.indexOf("/light8on") > 0)  {
+    
+    digitalWrite(Switch8, LOW);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch8";
+    doc["SwitchState"] = 1;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+
+  if (request.indexOf("/light8off") > 0)  {
+
+    digitalWrite(Switch8, HIGH);
+    doc.clear();
+    controlState="";
+    doc["SwitchID"] = "Switch8";
+    doc["SwitchState"] = 0;
+    doc["Time"] = getCurrentDateTime();
+    serializeJson(doc, controlState);
+    Serial.println(controlState);
+
+    mqttclient.publish(mqtt_topic, controlState.c_str());
+    doc.clear();
+
+  }
+  
   // Return the response
   wifiClient.println("HTTP/1.1 200 OK");
   wifiClient.println("Content-Type: text/html");
@@ -323,11 +558,35 @@ void loop() {
   wifiClient.println("<a href=\"/light4off\"\"><button class=\"button\">Turn Off </button></a><br />");
   wifiClient.println("</center>");
   wifiClient.println("<br><br>");
+  wifiClient.println("<center>");
+  wifiClient.println("<b>Switch 5</b>");
+  wifiClient.println("<a href=\"/light5on\"\"><button class=\"button\">Turn On </button></a>");
+  wifiClient.println("<a href=\"/light5off\"\"><button class=\"button\">Turn Off </button></a><br />");
+  wifiClient.println("</center>");
+  wifiClient.println("<br><br>");
+  wifiClient.println("<center>");
+  wifiClient.println("<b>Switch 6</b>");
+  wifiClient.println("<a href=\"/light6on\"\"><button class=\"button\">Turn On </button></a>");
+  wifiClient.println("<a href=\"/light6off\"\"><button class=\"button\">Turn Off </button></a><br />");
+  wifiClient.println("</center>");
+  wifiClient.println("<br><br>");
+  wifiClient.println("<center>");
+  wifiClient.println("<b>Switch 7</b>");
+  wifiClient.println("<a href=\"/light7on\"\"><button class=\"button\">Turn On </button></a>");
+  wifiClient.println("<a href=\"/light7off\"\"><button class=\"button\">Turn Off </button></a><br />");
+  wifiClient.println("</center>");
+  wifiClient.println("<br><br>");
+  wifiClient.println("<center>");
+  wifiClient.println("<b>Switch 8</b>");
+  wifiClient.println("<a href=\"/light8on\"\"><button class=\"button\">Turn On </button></a>");
+  wifiClient.println("<a href=\"/light8off\"\"><button class=\"button\">Turn Off </button></a><br />");
+  wifiClient.println("</center>");
+  wifiClient.println("<br><br>");
   wifiClient.println("<br><br>");
   wifiClient.println("<center>");
   wifiClient.println("<table border=\"5\">");
   wifiClient.println("<tr>");
-  if (!digitalRead(5))
+  if (!digitalRead(Switch1))
   {
     wifiClient.print("<td bgcolor='red'>Switch 1 is ON</td>");
  
@@ -341,7 +600,7 @@ void loop() {
 
   wifiClient.println("<br />");
 
-  if (!digitalRead(4))
+  if (!digitalRead(Switch2))
   {
     wifiClient.print("<td bgcolor='red'>Switch 2 is ON</td>");
   
@@ -354,7 +613,7 @@ void loop() {
   }
 
 
-  if (!digitalRead(14))
+  if (!digitalRead(Switch3))
 
   {
     wifiClient.print("<td bgcolor='red'>Switch 3 is ON</td>");
@@ -369,28 +628,58 @@ void loop() {
   }
 
 
-  if (!digitalRead(12))
-
-
+  if (!digitalRead(Switch4))
   {
-
-
     wifiClient.print("<td bgcolor='red'>Switch 4 is ON</td>");
-   
   }
-
-
   else
-
-
   {
-
-
     wifiClient.print("<td bgcolor='green'>Switch 4 is OFF</td>");
-   
-
   }
 
+  wifiClient.println("</tr><tr>");
+ 
+
+  if (!digitalRead(Switch5))
+  {
+    wifiClient.print("<td bgcolor='red'>Switch 5 is ON</td>");
+  }
+  else
+  {
+    wifiClient.print("<td bgcolor='green'>Switch 5 is OFF</td>");
+  }
+
+
+  if (!digitalRead(Switch6))
+  {
+    wifiClient.print("<td bgcolor='red'>Switch 6 is ON</td>");
+  }
+  else
+  {
+    wifiClient.print("<td bgcolor='green'>Switch 6 is OFF</td>");
+  }
+
+
+  if (!digitalRead(Switch7))
+  {
+    wifiClient.print("<td bgcolor='red'>Switch 7 is ON</td>");
+  }
+  else
+  {
+    wifiClient.print("<td bgcolor='green'>Switch 7 is OFF</td>");
+  }
+
+
+  if (!digitalRead(Switch8))
+  {
+    wifiClient.print("<td bgcolor='red'>Switch 8 is ON</td>");
+  }
+  else
+  {
+    wifiClient.print("<td bgcolor='green'>Switch 8 is OFF</td>");
+  }
+
+  
   wifiClient.println("</tr>");
   wifiClient.println("</table>");
   wifiClient.println("<BR>");

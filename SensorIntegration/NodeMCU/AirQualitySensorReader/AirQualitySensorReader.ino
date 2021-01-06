@@ -31,18 +31,22 @@ const int utcOffsetInSeconds = 19800;
 
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-
-//define PINS
-SoftwareSerial s(12,14);
-
 String outputString;
-
+String lastMessage;
+float temperature;
+float humidity;
+float heatIndex;
+float CO;
+float smoke;
+float lpg;
+float sound;
+const char * motionTime;
 
 void setup() {
-  s.begin(9600);
-  Serial.begin(9600);
-  Serial.flush();
 
+  Serial.begin(115200);
+
+  Serial.setTimeout(500);// Set time out for
   timeClient.begin();
 
   // Connect to WiFi network
@@ -87,6 +91,7 @@ void setup() {
 
   //connect to MQTT broker
   connectMQTT();
+
 }
 
 int connectMQTT()
@@ -171,35 +176,86 @@ void loop() {
 
   mqttclient.loop();
   timeClient.update();
-Serial.println(s.available());
-  if (s.available()>0)
-  {
-    outputString =s.read();
-    Serial.print("Read from Serial : ");
-    Serial.println(outputString);
-  }
-/*
-  if (outputString != "")
-  {
-    // Deserialize the JSON document
-    DeserializationError error = deserializeJson(doc, outputString);
-   
-    // Test if parsing succeeds.
-    if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
-    return;
-    }
-    
-    doc["Time"] = getCurrentDateTime();
-    outputString="";
-    serializeJson(doc, outputString);
 
-    Serial.println(outputString);
-    mqttclient.publish(mqtt_topic, outputString.c_str());
-    doc.clear();
+  if (Serial.available() > 0) {
+    char bfr[101];
+    memset(bfr, 0, 101);
+    Serial.readBytesUntil( '\n', bfr, 100);
+    outputString = bfr;
+    Serial.flush();
+    if (outputString.equals(lastMessage))
+    {
+      return;
+    }
+    else
+    {
+      lastMessage = outputString;
+      // Deserialize the JSON document
+      DeserializationError error = deserializeJson(doc, outputString);
+
+      // Test if parsing succeeds.
+      if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+      }
+
+      doc["Time"] = getCurrentDateTime();
+      String jsonObj;
+      serializeJson(doc, jsonObj);
+
+      Serial.print("Message to MQTT : ");
+      Serial.println(jsonObj);
+      mqttclient.publish(mqtt_topic, jsonObj.c_str());
+      
+      Serial.print("Read from Serial : ");
+      Serial.println(outputString);
+
+      String paramName = doc["ParamName"];
+
+      if((paramName).equals("Temperature"))
+      {
+        temperature = doc["ParamValue"];
+      }
+      
+      if((paramName).equals("Humidity"))
+      {
+        humidity = doc["ParamValue"];
+      }
+
+      if((paramName).equals("HeatIndex"))
+      {
+        heatIndex = doc["ParamValue"];
+      }
+        
+      if((paramName).equals("CO2"))
+      {
+        CO = doc["ParamValue"];
+      }
+
+      if((paramName).equals("Smoke"))
+      {
+        smoke = doc["ParamValue"];
+      }
+
+      if((paramName).equals("LPG"))
+      {
+        lpg = doc["ParamValue"];
+      }
+
+      if((paramName).equals("Motion"))
+      {
+        motionTime = doc["Time"];
+      }
+
+      if((paramName).equals("Sound"))
+      {
+        sound = doc["ParamValue"];
+      }
+      doc.clear();
+    }
   }
-  */
+
   // Check if a client has connected
   WiFiClient wifiClient = server.available();
   while (!wifiClient.available()) {
@@ -247,10 +303,49 @@ Serial.println(s.available());
   wifiClient.println("<table border=\"5\">");
 
   wifiClient.println("<tr>");
-  wifiClient.print("<td>" + String(outputString) + "</td>");
+  wifiClient.print("<td>Temperature</td>");
+  wifiClient.print("<td>" + String(temperature) + "</td>");
   wifiClient.println("</tr>");
 
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>Humidity</td>");
+  wifiClient.print("<td>" + String(humidity) + "</td>");
+  wifiClient.println("</tr>");
 
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>Heat Index</td>");
+  wifiClient.print("<td>" + String(heatIndex) + "</td>");
+  wifiClient.println("</tr>");
+
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>Smoke</td>");
+  wifiClient.print("<td>" + String(smoke) + "</td>");
+  wifiClient.println("</tr>");
+  
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>CO2</td>");
+  wifiClient.print("<td>" + String(CO) + "</td>");
+  wifiClient.println("</tr>");  
+  
+
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>LPG</td>");
+  wifiClient.print("<td>" + String(lpg) + "</td>");
+  wifiClient.println("</tr>");
+
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>Sound</td>");
+  wifiClient.print("<td>" + String(sound) + "</td>");
+  wifiClient.println("</tr>");
+
+  
+  wifiClient.println("<tr>");
+  wifiClient.print("<td>Last Motion</td>");
+  wifiClient.print("<td>" + String(motionTime) + "</td>");
+  wifiClient.println("</tr>");
+  
+
+  
   wifiClient.println("</table>");
   wifiClient.println("<BR>");
   wifiClient.println("</center>");
