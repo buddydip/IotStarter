@@ -179,40 +179,40 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   int switchState = doc["SwitchState"];
  
 
-  //Check swicth to toggle
-  if(switchID.equals("Switch1"))
+  //Check switch to toggle
+  if(switchID.equals("Switch1") && (digitalRead(Switch1) == switchState))
   {
       digitalWrite(Switch1, !switchState);
   }
-  if(switchID.equals("Switch2"))  
+  if(switchID.equals("Switch2") && (digitalRead(Switch2) == switchState))  
   {
     digitalWrite(Switch2, !switchState);
   }
-  if(switchID.equals("Switch3"))  
+  if(switchID.equals("Switch3") && (digitalRead(Switch3) == switchState))  
   {
     digitalWrite(Switch3, !switchState);
   }
-  if(switchID.equals("Switch4"))  
+  if(switchID.equals("Switch4") && (digitalRead(Switch4) == switchState))  
   {
     digitalWrite(Switch4, !switchState);
   }
 
-  if(switchID.equals("Switch5"))  
+  if(switchID.equals("Switch5") && (digitalRead(Switch5) == switchState))  
   {
     digitalWrite(Switch5, !switchState);
   }
   
-    if(switchID.equals("Switch6"))  
+    if(switchID.equals("Switch6") && (digitalRead(Switch6) == switchState))  
   {
     digitalWrite(Switch6, !switchState);
   }
   
-    if(switchID.equals("Switch7"))  
+    if(switchID.equals("Switch7") && (digitalRead(Switch7) == switchState))  
   {
     digitalWrite(Switch7, !switchState);
   }
   
-    if(switchID.equals("Switch8"))  
+    if(switchID.equals("Switch8") && (digitalRead(Switch8) == switchState))  
   {
     digitalWrite(Switch8, !switchState);
   }
@@ -254,8 +254,6 @@ void loop() {
   //Check amd control switch state
   if (request.indexOf("/light1on") > 0)  {
     
-    //controlState ="{\"SwitchID\":\"Switch1\",\"SwitchState\":1, \"Time\":\""+getCurrentDateTime()+"\"}";
-
     digitalWrite(Switch1, LOW);
     
     doc.clear();
