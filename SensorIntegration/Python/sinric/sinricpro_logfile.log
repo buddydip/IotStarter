@@ -1,0 +1,42 @@
+2021-01-22 20:24:39.510 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:22:15.380 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:22:15.397 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:22:16.420 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:22:16.498 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:22:16.524 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:30:21.657 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:30:51.777 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:31:03.022 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:32:17.793 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:32:20.991 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:32:21.001 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:32:22.476 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:32:22.494 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:32:22.501 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:32:34.793 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:32:54.816 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : can only concatenate str (not "datetime.datetime") to str
+2021-01-23 16:34:13.350 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:34:16.544 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:34:16.577 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:36:19.622 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:36:22.845 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:36:22.884 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:43:01.335 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:43:04.352 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:43:04.387 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:45:23.428 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:45:26.528 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:45:26.544 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:46:13.686 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:46:16.673 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:46:16.700 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:46:17.703 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'mqtt_client' is not defined
+2021-01-23 16:46:17.740 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'mqtt_client' is not defined
+2021-01-23 16:46:17.761 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'mqtt_client' is not defined
+2021-01-23 16:46:42.061 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'mqtt_client' is not defined
+2021-01-23 16:47:45.876 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:48:59.447 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:48:59.474 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 16:55:51.041 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 16:55:54.353 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 16:55:54.356 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
