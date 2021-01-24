@@ -28,6 +28,12 @@ def onPowerState(did, state):
         switchID = deviceNameArr[1]
     if (did == deviceIdArr[2]):
         switchID = deviceNameArr[2]
+    if (did == deviceIdArr[3]):
+        switchID = deviceNameArr[3]
+
+    if (switchID == ''):
+        print('Device id is missing')
+        return
 
     if (state == "On"):
         switchState = 1
@@ -37,7 +43,7 @@ def onPowerState(did, state):
     nowtime = str(datetime.now())
 
     msg = {'SwitchID': switchID, 'SwitchState': switchState, 'Time': nowtime}
-    payload = json.dumps(msg, indent=4)
+    payload = json.dumps(msg)
 
     mqtt_client.publish(MQTT_TOPIC_SWITCH, payload)
     print(payload)

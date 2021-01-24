@@ -40,3 +40,121 @@
 2021-01-23 16:55:51.041 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
 2021-01-23 16:55:54.353 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
 2021-01-23 16:55:54.356 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-23 22:30:47.312 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-23 22:30:54.084 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-23 22:30:54.163 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-24 06:50:54.851 | INFO     | sinric._sinricprosocket:receiveMessage:58 - Connection with server closed
+2021-01-24 06:50:55.121 | ERROR    | sinric._sinricprosocket:receiveMessage:59 - code = 1006 (connection closed abnormally [internal]), no reason
+Traceback (most recent call last):
+
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 827, in transfer_data
+    message = await self.read_message()
+                    │    └ <function WebSocketCommonProtocol.read_message at 0xb5e84fa8>
+                    └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 895, in read_message
+    frame = await self.read_data_frame(max_size=self.max_size)
+                  │    │                        │    └ 1048576
+                  │    │                        └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+                  │    └ <function WebSocketCommonProtocol.read_data_frame at 0xb5e93030>
+                  └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 971, in read_data_frame
+    frame = await self.read_frame(max_size)
+                  │    │          └ 1048576
+                  │    └ <function WebSocketCommonProtocol.read_frame at 0xb5e93078>
+                  └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 1051, in read_frame
+    extensions=self.extensions,
+               │    └ []
+               └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/framing.py", line 105, in read
+    data = await reader(2)
+                 └ <bound method StreamReader.readexactly of <StreamReader limit=32768 exception=ConnectionResetError(104, 'Connection reset by ...
+  File "/usr/lib/python3.7/asyncio/streams.py", line 679, in readexactly
+    await self._wait_for_data('readexactly')
+          │    └ <function StreamReader._wait_for_data at 0xb5f423d8>
+          └ <StreamReader limit=32768 exception=ConnectionResetError(104, 'Connection reset by peer') transport=<_SelectorSocketTransport...
+  File "/usr/lib/python3.7/asyncio/streams.py", line 473, in _wait_for_data
+    await self._waiter
+          │    └ None
+          └ <StreamReader limit=32768 exception=ConnectionResetError(104, 'Connection reset by peer') transport=<_SelectorSocketTransport...
+  File "/usr/lib/python3.7/asyncio/selector_events.py", line 801, in _read_ready__data_received
+    data = self._sock.recv(self.max_size)
+           │    │          │    └ 262144
+           │    │          └ <_SelectorSocketTransport closed fd=10>
+           │    └ None
+           └ <_SelectorSocketTransport closed fd=10>
+
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "app.py", line 85, in <module>
+    client.handle_all(udp_client)
+    │      │          └ <sinric._sinricproudp.SinricProUdp object at 0xb5cc71f0>
+    │      └ <function SinricPro.handle_all at 0xb5da7348>
+    └ <sinric._sinricpro.SinricPro object at 0xb5db3e70>
+
+  File "/root/.local/lib/python3.7/site-packages/sinric/_sinricpro.py", line 71, in handle_all
+    self.handle()
+    │    └ <function SinricPro.handle at 0xb5da7108>
+    └ <sinric._sinricpro.SinricPro object at 0xb5db3e70>
+  File "/root/.local/lib/python3.7/site-packages/sinric/_sinricpro.py", line 52, in handle
+    asyncio.get_event_loop().run_until_complete(asyncio.wait(tasks))
+    │       │                                   │       │    └ [<Task pending coro=<SinricProSocket.receiveMessage() running at /root/.local/lib/python3.7/site-packages/sinric/_sinricproso...
+    │       │                                   │       └ <function wait at 0xb5fd5e40>
+    │       │                                   └ <module 'asyncio' from '/usr/lib/python3.7/asyncio/__init__.py'>
+    │       └ <built-in function get_event_loop>
+    └ <module 'asyncio' from '/usr/lib/python3.7/asyncio/__init__.py'>
+  File "/usr/lib/python3.7/asyncio/base_events.py", line 571, in run_until_complete
+    self.run_forever()
+    │    └ <function BaseEventLoop.run_forever at 0xb5fdf108>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/usr/lib/python3.7/asyncio/base_events.py", line 539, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0xb5fdfe40>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/usr/lib/python3.7/asyncio/base_events.py", line 1775, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0xb5fa8ed0>
+    └ <Handle <TaskWakeupMethWrapper object at 0xb5cc78d0>(<Future finished result=None>)>
+  File "/usr/lib/python3.7/asyncio/events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle <TaskWakeupMethWrapper object at 0xb5cc78d0>(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle <TaskWakeupMethWrapper object at 0xb5cc78d0>(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle <TaskWakeupMethWrapper object at 0xb5cc78d0>(<Future finished result=None>)>
+> File "/root/.local/lib/python3.7/site-packages/sinric/_sinricprosocket.py", line 52, in receiveMessage
+    message = await connection.recv()
+                    │          └ <function WebSocketCommonProtocol.recv at 0xb5e84d68>
+                    └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 509, in recv
+    await self.ensure_open()
+          │    └ <function WebSocketCommonProtocol.ensure_open at 0xb5e84f18>
+          └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+  File "/root/.local/lib/python3.7/site-packages/websockets/protocol.py", line 803, in ensure_open
+    raise self.connection_closed_exc()
+          │    └ <function WebSocketCommonProtocol.connection_closed_exc at 0xb5e84ed0>
+          └ <websockets.client.WebSocketClientProtocol object at 0xb5cc75f0>
+
+websockets.exceptions.ConnectionClosedError: code = 1006 (connection closed abnormally [internal]), no reason
+2021-01-24 10:47:59.788 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-24 10:47:59.801 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-24 10:48:00.953 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'none' is not defined
+2021-01-24 10:48:00.969 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'none' is not defined
+2021-01-24 10:48:00.977 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'none' is not defined
+2021-01-24 10:48:00.990 | ERROR    | sinric._cbhandler:handleCallBacks:99 - Error : name 'none' is not defined
+2021-01-24 10:48:19.347 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-24 10:48:31.952 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-24 10:48:31.983 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-24 10:48:44.138 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-24 10:48:54.258 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-24 10:48:54.335 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
+2021-01-24 10:49:47.601 | ERROR    | sinric._sinricpro:handle_all:73 - Keyboard Interrupt
+2021-01-24 10:49:56.497 | SUCCESS  | sinric._sinricprosocket:connect:41 - Connected :)
+2021-01-24 10:49:56.564 | SUCCESS  | sinric._sinricprosocket:connect:46 - Timestamp is in sync :)
