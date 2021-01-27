@@ -1,9 +1,8 @@
 #!/bin/sh
 # launcher.sh
-
-sleep 60
-
 cd /
-cd /home/pi/IoT/Smarty
-sudo python3 SmartyMQTTInfluxDBBridge.py
+sudo service grafana-server start
+cd /home/pi/IoT/Smarty/Python
+sudo python3 SmartyMQTTDataBridge.py
 cd /
+
