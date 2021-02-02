@@ -1,0 +1,14 @@
+[Unit]
+Description=Smarty Data Bridge
+After=network.target
+
+[Service]
+ExecStart=/home/pi/IoT/Smarty/Python/launcher.sh
+WorkingDirectory=/home/pi/IoT/Smarty/Python/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
