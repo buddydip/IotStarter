@@ -53,6 +53,14 @@ def onPowerState(did, state):
         switchID = deviceNameArr[2]
     if (did == deviceIdArr[3]):
         switchID = deviceNameArr[3]
+    if (did == deviceIdArr[4]):
+        switchID = deviceNameArr[4]
+    if (did == deviceIdArr[5]):
+        switchID = deviceNameArr[5]
+    if (did == deviceIdArr[6]):
+        switchID = deviceNameArr[6]
+    if (did == deviceIdArr[7]):
+        switchID = deviceNameArr[7]
 
     if (switchID == ''):
         print('Device id is missing')
@@ -177,6 +185,21 @@ def _init_influxdb_database():
         influxdb_client.create_database(INFLUXDB_DATABASE)
     influxdb_client.switch_database(INFLUXDB_DATABASE)
 
+
+def connectSinricPro():
+    try:
+        client = SinricPro(appKey, deviceIdArr, callbacks, event_callbacks=eventsCallbacks,
+                           enable_log=False, restore_states=True, secretKey=secretKey)
+        udp_client = SinricProUdp(callbacks, deviceIdArr, enable_trace=False)
+        # Set it to True to start logging request Offline Request/Response
+
+        print('Connected to Sinric with client '+ str(udp_client))
+        client.handle_all(udp_client)
+        print('Listening to Sinric Events')
+        sleep(30)
+    except:
+        connectSinricPro()
+
 def main():
     _init_influxdb_database()
 
@@ -187,15 +210,8 @@ def main():
     mqtt_client.connect(MQTT_ADDRESS, 1883)
     mqtt_client.loop_start()  # start the loop
 
-    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks,
-                       enable_log=False,restore_states=True,secretKey=secretKey)
-    udp_client = SinricProUdp(callbacks,deviceIdArr,enable_trace=False)
-    # Set it to True to start logging request Offline Request/Response
+    connectSinricPro()
 
-    client.handle_all(udp_client)
-    print('Connected to Sinric ')
-
-    #mqtt_client.loop_forever()
 
 if __name__ == '__main__':
     print('MQTT to InfluxDB bridge')
