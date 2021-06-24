@@ -5,6 +5,9 @@ import json
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
 
+from sinric import SinricPro
+from sinric import SinricProUdp
+from credentials import appKey, secretKey, deviceIdArr,deviceNameArr
 from time import sleep
 from datetime import datetime
 
@@ -35,6 +38,68 @@ class SwitchData(NamedTuple):
     Time: str
     SwitchState: bool
 
+
+def onPowerState(did, state):
+    # Alexa, turn ON/OFF Device
+
+    switchID = ""
+    switchState = 0
+
+    if (did == deviceIdArr[0]):
+        switchID = deviceNameArr[0]
+    if (did == deviceIdArr[1]):
+        switchID = deviceNameArr[1]
+    if (did == deviceIdArr[2]):
+        switchID = deviceNameArr[2]
+    if (did == deviceIdArr[3]):
+        switchID = deviceNameArr[3]
+    if (did == deviceIdArr[4]):
+        switchID = deviceNameArr[4]
+    if (did == deviceIdArr[5]):
+        switchID = deviceNameArr[5]
+    if (did == deviceIdArr[6]):
+        switchID = deviceNameArr[6]
+    if (did == deviceIdArr[7]):
+        switchID = deviceNameArr[7]
+
+    if (switchID == ''):
+        print('Device id is missing')
+        return
+
+    if (state == "On"):
+        switchState = 1
+    else:
+        switchState = 0
+
+    nowtime = str(datetime.now())
+
+    msg = {'SwitchID': switchID, 'SwitchState': switchState, 'Time': nowtime}
+    payload = json.dumps(msg)
+
+    mqtt_client.publish(MQTT_TOPIC_SWITCH, payload)
+    print(payload)
+    return True, state
+
+def Events():
+    while True:
+        # Select as per your requirements
+        # REMOVE THE COMMENTS TO USE
+
+        # client.event_handler.raiseEvent(tvId, 'setPowerState',data={'state': 'On'})
+        pass
+
+
+event_callback = {
+    'Events': Events
+}
+
+eventsCallbacks={
+    "Events": Events
+}
+
+callbacks = {
+    'powerState': onPowerState
+}
 
 
 def on_connect(client, userdata, flags, rc):
@@ -121,6 +186,19 @@ def _init_influxdb_database():
     influxdb_client.switch_database(INFLUXDB_DATABASE)
 
 
+def connectSinricPro():
+    try:
+        client = SinricPro(appKey, deviceIdArr, callbacks, event_callbacks=eventsCallbacks,
+                           enable_log=False, restore_states=True, secretKey=secretKey)
+        udp_client = SinricProUdp(callbacks, deviceIdArr, enable_trace=False)
+        # Set it to True to start logging request Offline Request/Response
+
+        print('Connected to Sinric with client '+ str(udp_client))
+        client.handle_all(udp_client)
+        print('Listening to Sinric Events')
+        sleep(30)
+    except:
+        connectSinricPro()
 
 def main():
     _init_influxdb_database()
@@ -130,8 +208,9 @@ def main():
     mqtt_client.on_message = on_message
 
     mqtt_client.connect(MQTT_ADDRESS, 1883)
-    mqtt_client.loop_forever()  # start the loop
-    print('MQTT Listener Started')
+    mqtt_client.loop_start()  # start the loop
+
+    connectSinricPro()
 
 
 if __name__ == '__main__':
