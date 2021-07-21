@@ -6,19 +6,20 @@ Also uses webserver on ESP32 for direct switch control
 
 #include <WiFi.h>
 #include <ESPmDNS.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
 const char* ssid     = "MORPHEOUS";
 const char* password = "whatever2020";
-const char* nodeID = "UPPERBEDROOM";
+const char* nodeID = "GROUNDBEDROOM";
 
 //MQTT Connection
-const char* mqtt_server = "192.168.1.2";
+const char* mqtt_server = "Smarty";
 const int mqtt_port = 1883;
-const char* mqtt_topic = "smarty/switchcontrol/upperbedroom";
+const char* mqtt_topic = "smarty/switchcontrol/groundbedroom";
+const char* MQTT_USER = "pi";
+const char* MQTT_PASSWORD = "meripi123";
+
 
 //JSON message for switch control
 String controlState = "";
@@ -26,18 +27,6 @@ StaticJsonDocument<200> doc;
 
 
 //PIN Switch Mapping
-/*
-const int Switch1 = 12;
-const int Switch2 = 15;
-const int Switch3 = 18;
-const int Switch4 = 21;
-const int Switch5 = 22;
-const int Switch6 = 23;
-const int Switch7 = 26;
-const int Switch8 = 27;
-*/
-
-
 const int Switch1 = 23;  //D23
 const int Switch2 = 22;  //D22
 const int Switch3 = 21;  //D21
@@ -81,14 +70,10 @@ String switch8name = String(nodeID) + ".Switch8";
 
 //Wifiserver instance at port 80
 WiFiServer server(80);
-WiFiUDP ntpUDP;
-const int utcOffsetInSeconds = 19800;
-
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 //MQTT client at port 1883
 WiFiClient wifimqClient;
-PubSubClient mqttclient;
+PubSubClient mqttclient(wifimqClient);
 
 
 
@@ -98,7 +83,7 @@ void connectWifi()
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -110,8 +95,6 @@ void connectWifi()
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-
-  server.begin();
 
   // Set up mDNS responder:
   // - first argument is the domain name, in this example
@@ -128,6 +111,7 @@ void connectWifi()
 
   // Add service to MDNS-SD
   MDNS.addService("http", "tcp", 80);
+  server.begin();
 }
 
 
@@ -210,16 +194,22 @@ int connectMQTT()
   Serial.print(mqtt_server);
   Serial.println(" at port " + mqtt_port);
 
+
+  Serial.print("Resolving Host....");
+  IPAddress serverIp = MDNS.queryHost(mqtt_server, 30000);
+  Serial.print("IP : ");
+  Serial.println(serverIp.toString());
+
+  
   //connect to MQTT server
-  mqttclient.setClient(wifimqClient);
-  mqttclient.setServer(mqtt_server, mqtt_port);
+  mqttclient.setServer(serverIp.toString().c_str(), mqtt_port);
   mqttclient.setCallback(MQTTcallback);
 
-  if (mqttclient.connect(nodeID))
+  if (mqttclient.connect(nodeID, MQTT_USER, MQTT_PASSWORD))
   {
     Serial.println("Connected to MQTT Broker");
 
-    boolean subs = mqttclient.subscribe(mqtt_topic);
+    mqttclient.subscribe(mqtt_topic);
 
     Serial.print("Subscribed to topic ");
     Serial.println(mqtt_topic);
@@ -306,14 +296,12 @@ void setup()
   //connect to wifi  
   connectWifi();  
 
-  timeClient.begin();
-
-
+  int nrOfServices = MDNS.queryService("http", "tcp");
+   
   //connect to MQTT broker
   connectMQTT();
 }
 
-int value = 0;
 
 void loop() {
 
@@ -321,6 +309,7 @@ void loop() {
   { 
     connectWifi();
   }
+
   
   //check MQTT Connection
   if (mqttclient.state() != 0)
@@ -329,7 +318,7 @@ void loop() {
   }
 
   mqttclient.loop();
-  timeClient.update();
+  
 
 
   if ((digitalRead(Button1) != Button1State))
@@ -391,8 +380,10 @@ void loop() {
 
 
   WiFiClient client = server.available();   // listen for incoming clients
-
-  if (client) {                             // if you get a client,
+  if (!client) {
+        return;
+  }
+  else{                             // if you get a client,
     Serial.println("New Client.");           // print a message out the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
@@ -447,8 +438,11 @@ void loop() {
 
             client.println("</style>");
             client.println("<hr/><hr>");
-            client.println("<h4><center> Smart Switch Control </center></h4>");
+            client.print("<h4><center> Smart Switch Control ");
+            client.print(nodeID);
+            client.println("</center></h4>");
             client.println("<hr/><hr>");
+
             client.println("<center>");
             client.println("<table border=\"1\" width=\"100%\">");
             client.println("<tr>");
@@ -623,7 +617,8 @@ void loop() {
         if (currentLine.endsWith("GET /switch8off")) {
           digitalWrite(Switch8, HIGH);                // GET /L turns the LED off
           sendMQTTMessage(switch8name, 0);
-        }            
+        }   
+               
       }
     }
     // close the connection:
