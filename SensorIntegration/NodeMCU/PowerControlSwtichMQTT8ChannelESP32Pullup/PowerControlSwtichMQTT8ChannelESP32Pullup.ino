@@ -12,12 +12,12 @@
 
 const char* ssid     = "MORPHEOUS";
 const char* password = "whatever2020";
-const char* nodeID = "UPPERBEDROOM";
+const char* nodeID = "GROUNDBEDROOM";
 
 //MQTT Connection
 const char* mqtt_server = "Smarty";
 const int mqtt_port = 1883;
-const char* mqtt_topic = "smarty/switchcontrol/upperbedroom";
+const char* mqtt_topic = "smarty/switchcontrol/groundbedroom";
 const char* MQTT_USER = "pi";
 const char* MQTT_PASSWORD = "meripi123";
 
@@ -437,7 +437,7 @@ void loop() {
 
 
   WiFiClient client = server.available();   // listen for incoming clients
-  while (!client.available()) {
+  if (!client.available()) {
     if (!client) {
       return;
     }
