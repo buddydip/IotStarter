@@ -17,14 +17,14 @@ const int mqtt_port = 1883;
 //const char *mqtt_topic = "smarty/switchcontrol/mainstudy";
 //const char *mqtt_topic = "smarty/switchcontrol/corridor";
 //const char *mqtt_topic = "smarty/switchcontrol/upperbathroom";
-const char *mqtt_topic = "smarty/switchcontrol/veranda";
+//const char *mqtt_topic = "smarty/switchcontrol/veranda";
 //const char *mqtt_topic = "smarty/switchcontrol/roofstairs";
 //const char *mqtt_topic = "smarty/switchcontrol/testing";
 //const char *mqtt_topic = "smarty/switchcontrol/upperbedroom";
-//const char *mqtt_topic = "smarty/switchcontrol/studyplug";
+const char *mqtt_topic = "smarty/switchcontrol/studyplug";
 
-//const char *nodeID = "ROOFSTAIRS";
-const char *nodeID = "VERANDA";
+//const char *nodeID = "ROOFSTAIR";
+//const char *nodeID = "VERANDA";
 //const char *nodeID = "STAIRLANDING";
 //const char *nodeID = "MAINSTUDY";
 //const char *nodeID = "LIBRARY";
@@ -32,7 +32,7 @@ const char *nodeID = "VERANDA";
 //const char *nodeID = "UPPERBATHROOM";
 //const char *nodeID = "TESTING";
 //const char *nodeID = "UPPERBEDROOM";
-//const char *nodeID = "STUDYPLUG";
+const char *nodeID = "STUDYPLUG";
 
 //Variables
 int i = 0;
@@ -58,15 +58,15 @@ PubSubClient mqttclient;
 
 
 //PIN Switch Mapping
-const int Switch1 = 5;
-const int Switch2 = 4;
-const int Switch3 = 14;
-const int Switch4 = 12;
+const int Switch1 = 4;
+const int Switch2 = 0;
+const int Switch3 = 2;
+const int Switch4 = 14;
 
 //PIN Button Mapping
 //const int Button1 = 2;
 const int Button1 = 10;
-const int Button2 = 0;
+const int Button2 = 9;
 const int Button3 = 13;
 const int Button4 = 3;
 
@@ -660,7 +660,7 @@ bool testWifi(void)
 {
   int c = 0;
   Serial.println("Waiting for Wifi to connect");
-  while ( c < 20000 ) {
+  while ( c < 2000 ) {
     if (WiFi.status() == WL_CONNECTED)
     {
       return true;
