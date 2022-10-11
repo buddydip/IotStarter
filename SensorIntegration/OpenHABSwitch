@@ -1,0 +1,22 @@
+UID: mqtt:topic:LocalMosquitto:BackLED
+label: BackLED (CinemaRoom)
+thingTypeUID: mqtt:topic
+configuration: {}
+bridgeUID: mqtt:broker:LocalMosquitto
+location: CinemaRoom
+channels:
+  - id: BackLEDSwitch
+    channelTypeUID: mqtt:switch
+    label: BackLEDSwitch
+    description: null
+    configuration:
+      postCommand: true
+      qos: 1
+      commandTopic: smarty/switchcontrol/cinemaroom
+      stateTopic: smarty/switchcontrol/cinemaroom
+      transformationPattern: JSONPATH:$.[?($.SwitchID ==
+        "CINEMAROOM.Switch4")].SwitchState∩MAP:state.map
+      off: '{"SwitchID":"CINEMAROOM.Switch4", "SwitchState":0,
+        "Time":"JSONPATH:$.%1$tY:%1$tm:%1$tdT%1$tH:%1$tM:%1$tS"}'
+      on: '{"SwitchID":"CINEMAROOM.Switch4", "SwitchState":1,
+        "Time":"JSONPATH:$.%1$tY:%1$tm:%1$tdT%1$tH:%1$tM:%1$tS"}'
